@@ -1,6 +1,6 @@
 import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommands, PinMode, PinState } from "hmp-arduino/arduino.js";
+import { ArduinoCommand, PinMode, PinState } from "hmp-arduino/arduino.js";
 
 export class LightStandardDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:standard";
@@ -46,13 +46,13 @@ export class LightStandardDevice extends DeviceInstance {
 
     async init() {
         await super.init();
-        await this.roomController.sendCommand(ArduinoCommands.pinMode, this.settings.pin as number, PinMode.OUTPUT);
-        await this.roomController.sendCommand(ArduinoCommands.digitalWrite, this.settings.pin as number, this.computePinState(this.mainToggleState));
+        await this.roomController.sendCommand(ArduinoCommand.pinMode, this.settings.pin as number, PinMode.OUTPUT);
+        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, this.computePinState(this.mainToggleState));
     }
 
     async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
-        await this.roomController.sendCommand(ArduinoCommands.digitalWrite, this.settings.pin as number, this.computePinState(this.mainToggleState));
+        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, this.computePinState(this.mainToggleState));
     }
 
     computePinState(state: boolean): PinState {

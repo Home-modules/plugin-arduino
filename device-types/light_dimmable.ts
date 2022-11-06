@@ -1,6 +1,6 @@
 import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommands, PinMode, PinState } from "hmp-arduino/arduino.js";
+import { ArduinoCommand, PinMode, PinState } from "hmp-arduino/arduino.js";
 
 export class LightDimmableDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:dimmable";
@@ -63,7 +63,7 @@ export class LightDimmableDevice extends DeviceInstance {
 
     override async init() {
         await super.init();
-        await this.roomController.sendCommand(ArduinoCommands.pinMode, this.settings.pin as number, PinMode.OUTPUT);
+        await this.roomController.sendCommand(ArduinoCommand.pinMode, this.settings.pin as number, PinMode.OUTPUT);
         await this.setPinValue();
     }
 
@@ -84,6 +84,6 @@ export class LightDimmableDevice extends DeviceInstance {
         let res = this.mainToggleState ? (this.interactionStates.brightness as HMApi.T.DeviceInteraction.State.Slider | undefined)?.value : 0;
         if (res === undefined) res = 255;
         res = this.settings.invert ? 255 - res : res;
-        await this.roomController.sendCommand(ArduinoCommands.analogWrite, this.settings.pin as number, res);
+        await this.roomController.sendCommand(ArduinoCommand.analogWrite, this.settings.pin as number, res);
     }
 }

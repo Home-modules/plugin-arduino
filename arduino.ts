@@ -4,7 +4,7 @@ import ArduinoSerialController from "hmp-arduino/room-controllers/arduino_serial
 import { ThermometerDHTDevice } from "hmp-arduino/device-types/thermometer_dht.js";
 import { LightDimmableDevice } from "hmp-arduino/device-types/light_dimmable.js";
 
-export enum ArduinoCommands {
+export enum ArduinoCommand {
     pinMode = 0,
     digitalWrite = 1,
     digitalRead = 2,

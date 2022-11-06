@@ -1,7 +1,7 @@
 import { ReadlineParser, SerialPort } from "serialport";
 import { HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
 import arduinoBoards from "hmp-arduino/boards.js";
-import { ArduinoCommands } from "hmp-arduino/arduino.js";
+import { ArduinoCommand } from "hmp-arduino/arduino.js";
 
 const log = new Log("controllers/arduino:serial");
 
@@ -138,7 +138,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
      * @param pin The pin to use
      * @param value The parameter for the command
      */
-    async sendCommand(command: ArduinoCommands, pin: number, value?: number) {
+    async sendCommand(command: ArduinoCommand, pin: number, value?: number) {
         const port = this.settings.port as string;
         const serial = this.serialPort;
         log.i('Sending command to', serial.path, command, pin, value);
@@ -167,7 +167,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
      * @param command The command to send
      * @param pin The pin to use
      */
-    async sendCommandWithResponse(command: ArduinoCommands, pin: number) {
+    async sendCommandWithResponse(command: ArduinoCommand, pin: number) {
         const commandId = ((this.lastCommandId++) % 246) + 10; // 10-255
         this.sendCommand(command, pin, commandId);
         return new Promise<Buffer>((resolve) => {

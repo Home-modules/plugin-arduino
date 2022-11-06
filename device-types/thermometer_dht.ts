@@ -1,6 +1,6 @@
 import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommands } from "hmp-arduino/arduino.js";
+import { ArduinoCommand } from "hmp-arduino/arduino.js";
 
 export class ThermometerDHTDevice extends DeviceInstance {
     static id: `${string}:${string}` = "thermometer:dht";
@@ -167,9 +167,9 @@ export class ThermometerDHTDevice extends DeviceInstance {
 
     async getCurrentState() {
         const commandCode = {
-            "11": ArduinoCommands.DHT11,
-            "21": ArduinoCommands.DHT21,
-            "22": ArduinoCommands.DHT22,
+            "11": ArduinoCommand.DHT11,
+            "21": ArduinoCommand.DHT21,
+            "22": ArduinoCommand.DHT22,
         }[this.settings.type as '11' | '21' | '22'];
         const data = await this.roomController.sendCommandWithResponse(commandCode, this.settings.pin as number);
         let temperature = data.readFloatLE(0);
