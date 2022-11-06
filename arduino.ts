@@ -2,6 +2,7 @@ import { registerRoomController, registerDeviceType } from "../../src/plugins.js
 import { LightStandardDevice } from "hmp-arduino/device-types/light_standard.js";
 import ArduinoSerialController from "hmp-arduino/room-controllers/arduino_serial.js";
 import { ThermometerDHTDevice } from "hmp-arduino/device-types/thermometer_dht.js";
+import { LightDimmableDevice } from "hmp-arduino/device-types/light_dimmable.js";
 
 export enum ArduinoCommands {
     pinMode = 0,
@@ -27,4 +28,6 @@ export enum PinState {
 
 registerRoomController(ArduinoSerialController);
 registerDeviceType(LightStandardDevice);
+registerDeviceType(LightDimmableDevice);
 registerDeviceType(ThermometerDHTDevice);
+
