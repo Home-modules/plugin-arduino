@@ -5,6 +5,8 @@ import { ArduinoCommands } from "hmp-arduino/arduino.js";
 
 const log = new Log("controllers/arduino:serial");
 
+const correctArduinoVersion = 'arduino:serial 0.0.1';
+
 export default class ArduinoSerialController extends RoomControllerInstance {
     static id: `${string}:${string}` = "arduino:serial";
     static super_name = "Arduino";
@@ -59,6 +61,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
 
 
     serialPort: InstanceType<typeof SerialPort>;
+    parser: ReadlineParser;
     dataListeners: Record<number, (data: Buffer) => void> = {};
 
     constructor(properties: HMApi.T.Room) {
@@ -69,6 +72,11 @@ export default class ArduinoSerialController extends RoomControllerInstance {
             baudRate: properties.controllerType.settings.baudrate as number,
             autoOpen: false,
         });
+
+        this.parser = this.serialPort.pipe(new ReadlineParser({
+            encoding: 'hex',
+            delimiter: '0d0a' // \r\n
+        }));
     }
 
     async init() {
@@ -85,24 +93,23 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                     this.disable(error.message);
                     resolve();
                 } else {
-                    this.serialPort.on('data', (data: Buffer) => {
-                        log.i('Received data', Array(data.values()));
-                        if (data[0] === 0) {
+                    this.parser.on('data', (data: string) => {
+                        const buffer = Buffer.from(data, 'hex');
+                        log.i(this.id, 'Data received from Arduino:', buffer.toString(), buffer);
+                        if (buffer[0] === 0) {
+                            const arduinoVersion = buffer.slice(1).toString();
+                            if (arduinoVersion !== correctArduinoVersion) {
+                                this.disable(`The firmware on the Room Controller is incompatible (expected '${correctArduinoVersion}', got '${arduinoVersion}')`);
+                            }
                             resolve();
+                            return;
                         }
+                        const command = buffer[0];
+                        const rest = buffer.slice(1);
+                        this.dataListeners[command]?.(rest);
                     });
                 }
             });
-        });
-        const parser = this.serialPort.pipe(new ReadlineParser({
-            encoding: 'hex',
-            delimiter: '0d0a' // \r\n
-        }));
-        parser.on('data', (data: string) => {
-            const buffer = Buffer.from(data, 'hex');
-            const command = buffer[0];
-            const rest = buffer.slice(1);
-            this.dataListeners[command](rest);
         });
         return super.init();
     }
