@@ -22,7 +22,7 @@ export class ThermometerDHTDevice extends DeviceInstance {
             id: 'type',
             type: 'radio',
             label: 'DHT type',
-            direction: 'h',
+            direction: 'v',
             required: true,
             options: {
                 "11": { label: "DHT11" },
@@ -34,7 +34,7 @@ export class ThermometerDHTDevice extends DeviceInstance {
             id: 'unit',
             type: 'radio',
             label: 'Temperature unit',
-            direction: 'h',
+            direction: 'v',
             required: true,
             options: {
                 "c": { label: "Celsius" },
