@@ -10,9 +10,15 @@ export enum ArduinoCommand {
     digitalRead = 2,
     analogWrite = 3,
     analogRead = 4,
+    listenPin = 5,
     DHT11 = 50,
     DHT21 = 51,
     DHT22 = 52,
+}
+
+export enum ArduinoEvent {
+    start = 0,
+    pinChange = 1
 }
 
 export enum PinMode {
@@ -31,3 +37,4 @@ registerDeviceType(LightStandardDevice);
 registerDeviceType(LightDimmableDevice);
 registerDeviceType(ThermometerDHTDevice);
 
+export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

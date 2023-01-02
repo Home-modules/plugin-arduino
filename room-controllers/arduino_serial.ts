@@ -1,7 +1,7 @@
 import { ReadlineParser, SerialPort } from "serialport";
 import { HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
-import arduinoBoards from "hmp-arduino/boards.js";
-import { ArduinoCommand } from "hmp-arduino/arduino.js";
+import arduinoBoards from "../boards.js";
+import { ArduinoCommand, ArduinoEvent } from "../arduino.js";
 
 const log = new Log("controllers/arduino:serial");
 
@@ -62,10 +62,18 @@ export default class ArduinoSerialController extends RoomControllerInstance {
 
     serialPort: InstanceType<typeof SerialPort>;
     parser: ReadlineParser;
-    dataListeners: Record<number, (data: Buffer) => void> = {};
+    eventListeners: Record<number, ((data: Buffer) => void)[]> = {};
+
+    on(event: number, listemer: (data: Buffer) => void) {
+        if (this.eventListeners[event]) {
+            this.eventListeners[event].push(listemer);
+        } else {
+            this.eventListeners[event] = [listemer];
+        }
+    }
 
     constructor(properties: HMApi.T.Room) {
-        super(properties);
+        super(properties, false);
 
         this.serialPort = new SerialPort({
             path: properties.controllerType.settings.port as string,
@@ -77,6 +85,8 @@ export default class ArduinoSerialController extends RoomControllerInstance {
             encoding: 'hex',
             delimiter: '0d0a' // \r\n
         }));
+
+        this.instantiateDevices();
     }
 
     async init() {
@@ -96,7 +106,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                     this.parser.on('data', (data: string) => {
                         const buffer = Buffer.from(data, 'hex');
                         log.i(this.id, 'Data received from Arduino:', buffer.toString(), buffer);
-                        if (buffer[0] === 0) {
+                        if (buffer[0] === ArduinoEvent.start) {
                             const arduinoVersion = buffer.slice(1).toString();
                             if (arduinoVersion !== correctArduinoVersion) {
                                 this.disable(`The firmware on the Room Controller is incompatible (expected '${correctArduinoVersion}', got '${arduinoVersion}')`);
@@ -104,9 +114,9 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                             resolve();
                             return;
                         }
-                        const command = buffer[0];
+                        const event = buffer[0];
                         const rest = buffer.slice(1);
-                        this.dataListeners[command]?.(rest);
+                        this.eventListeners[event]?.forEach(listemer => listemer(rest));
                     });
                 }
             });
@@ -171,10 +181,10 @@ export default class ArduinoSerialController extends RoomControllerInstance {
         const commandId = ((this.lastCommandId++) % 246) + 10; // 10-255
         this.sendCommand(command, pin, commandId);
         return new Promise<Buffer>((resolve) => {
-            this.dataListeners[commandId] = (data: Buffer) => {
+            this.on(commandId, (data: Buffer) => {
                 resolve(data);
-                delete this.dataListeners[commandId];
-            };
+                delete this.eventListeners[commandId];
+            });
         });
     }
 }
