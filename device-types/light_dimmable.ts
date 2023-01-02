@@ -1,4 +1,4 @@
-import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
+import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
 import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
 
@@ -48,8 +48,8 @@ export class LightDimmableDevice extends DeviceInstance {
     };
 
 
-    constructor(properties: HMApi.T.Device, roomId: string) {
-        super(properties, roomId);
+    constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
+        super(properties, roomController);
     }
 
     override get roomController() {

@@ -1,6 +1,8 @@
-import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
+import { DeviceInstance, HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
 import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
+
+const log = new Log('light:standard')
 
 export class LightStandardDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:standard";
@@ -31,8 +33,8 @@ export class LightStandardDevice extends DeviceInstance {
     static hasMainToggle = true;
 
 
-    constructor(properties: HMApi.T.Device, roomId: string) {
-        super(properties, roomId);
+    constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
+        super(properties, roomController);
     }
 
     get roomController() {
