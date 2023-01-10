@@ -26,6 +26,15 @@ export class LightDimmableDevice extends DeviceInstance {
             default: false,
             description: 'Currently pin will be LOW when off and HIGH when on',
             description_on_true: 'Currently pin will be HIGH when off and LOW when on',
+        },
+        {
+            id: 'curve',
+            type: 'slider',
+            label: 'Brightness curve',
+            default: 2,
+            min: 1,
+            max: 4,
+            description: 'The shape of the curve that translates the brightness. Left is straight and right is curved.'
         }
     ];
     static hasMainToggle = true;
@@ -33,7 +42,7 @@ export class LightDimmableDevice extends DeviceInstance {
         "brightness": {
             type: "slider",
             label: "Brightness",
-            min: 0,
+            min: 1,
             max: 255,
             step: 1,
             live: true,
@@ -81,8 +90,13 @@ export class LightDimmableDevice extends DeviceInstance {
     }
 
     async setPinValue() {
-        let res = this.mainToggleState ? (this.interactionStates.brightness as HMApi.T.DeviceInteraction.State.Slider | undefined)?.value : 0;
-        if (res === undefined) res = 255;
+        let res: number|undefined = 0;
+        if (this.mainToggleState) {
+            res = (this.interactionStates.brightness as HMApi.T.DeviceInteraction.State.Slider | undefined)?.value;
+            if (res === undefined) res = 255;
+            const curve = this.settings.curve as number || 2;
+            res = (((--res) / 255) ** curve) * 255 + 1;
+        }
         res = this.settings.invert ? 255 - res : res;
         await this.roomController.sendCommand(ArduinoCommand.analogWrite, this.settings.pin as number, res);
     }
