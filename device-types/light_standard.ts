@@ -49,7 +49,10 @@ export class LightStandardDevice extends DeviceInstance {
         super(properties, roomController);
         const physicalSwitchPin = properties.params['physical-switch'];
         if (typeof physicalSwitchPin === 'number' && (!isNaN(physicalSwitchPin)) && physicalSwitchPin !== -1) {
-            this.physicalSwitch = new SimplePhysicalSwitch(this.roomController, physicalSwitchPin, this.toggleMainToggle.bind(this));
+            this.physicalSwitch = new SimplePhysicalSwitch(this.roomController, physicalSwitchPin, async() => {
+                await this.toggleMainToggle();
+                await this.updateState(false);
+            });
         }
     }
 
