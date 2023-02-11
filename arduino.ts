@@ -3,6 +3,7 @@ import { LightStandardDevice } from "./device-types/light_standard.js";
 import ArduinoSerialController from "./room-controllers/arduino_serial.js";
 import { ThermometerDHTDevice } from "./device-types/thermometer_dht.js";
 import { LightDimmableDevice } from "./device-types/light_dimmable.js";
+import { LightRGBDevice } from "./device-types/light_rgb.js";
 
 export enum ArduinoCommand {
     pinMode = 0,
@@ -35,6 +36,7 @@ export enum PinState {
 registerRoomController(ArduinoSerialController);
 registerDeviceType(LightStandardDevice);
 registerDeviceType(LightDimmableDevice);
+registerDeviceType(LightRGBDevice);
 registerDeviceType(ThermometerDHTDevice);
 
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
