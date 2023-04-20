@@ -22,108 +22,79 @@ export class ThermometerDHTDevice extends DeviceInstance {
             id: 'type',
             type: 'radio',
             label: 'DHT type',
-            direction: 'v',
             required: true,
             options: {
-                "11": { label: "DHT11" },
-                "21": { label: "DHT21" },
-                "22": { label: "DHT22" },
-            }
+                "11": "DHT11",
+                "21": "DHT21",
+                "22": "DHT22",
+            },
+            default: "11"
         },
         {
             id: 'unit',
             type: 'radio',
             label: 'Temperature unit',
-            direction: 'v',
             required: true,
             options: {
-                "c": { label: "Celsius" },
-                "f": { label: "Fahrenheit" },
-                "k": { label: "Kelvin" },
-            }
+                "c": "Celsius",
+                "f": "Fahrenheit",
+                "k": "Kelvin",
+            },
+            default: "c"
         },
         {
-            type: 'horizontal_wrapper',
-            columns: [
+            type: 'container',
+            label: "Threshholds",
+            children: [
                 {
-                    width: 1,
-                    fields: [
-                        {
-                            id: 'cold_threshold',
-                            type: 'number',
-                            label: 'Cold threshold',
-                            description: 'The temperature below which the reading will turn blue',
-                            min: -273.15,
-                            max: 1000,
-                            default: 20,
-                            postfix: "°C"
-                        }
-                    ]
+                    id: 'cold_threshold',
+                    type: 'number',
+                    label: 'Cold',
+                    description: 'The temperature below which the reading will turn blue',
+                    min: -273.15,
+                    max: 1000,
+                    default: 20,
+                    postfix: "°C"
                 },
                 {
-                    width: 1,
-                    fields: [
-                        {
-                            id: 'warm_threshold',
-                            type: 'number',
-                            label: 'Warm threshold',
-                            description: 'The temperature above which the reading will turn orange',
-                            min: -273.15,
-                            max: 1000,
-                            default: 30,
-                            postfix: "°C"
-                        },
-                    ]
+                    id: 'warm_threshold',
+                    type: 'number',
+                    label: 'Warm',
+                    description: 'The temperature above which the reading will turn orange',
+                    min: -273.15,
+                    max: 1000,
+                    default: 30,
+                    postfix: "°C"
                 },
                 {
-                    width: 1,
-                    fields: [
-                        {
-                            id: 'hot_threshold',
-                            type: 'number',
-                            label: 'Hot threshold',
-                            description: 'The temperature above which the reading will turn red',
-                            min: -273.15,
-                            max: 1000,
-                            default: 40,
-                            postfix: "°C"
-                        }
-                    ]
-                },
-            ]
-        },
-        {
-            type: 'horizontal_wrapper',
-            columns: [
-                {
-                    width: 1,
-                    fields: [
-                        {
-                            id: 'dry_threshold',
-                            type: 'number',
-                            label: 'Dry threshold',
-                            description: 'The humidity below which the reading will turn orange',
-                            min: 0,
-                            max: 100,
-                            default: 30,
-                            postfix: "%",
-                        }
-                    ]
+                    id: 'hot_threshold',
+                    type: 'number',
+                    label: 'Hot',
+                    description: 'The temperature above which the reading will turn red',
+                    min: -273.15,
+                    max: 1000,
+                    default: 40,
+                    postfix: "°C"
                 },
                 {
-                    width: 1,
-                    fields: [
-                        {
-                            id: 'wet_threshold',
-                            type: 'number',
-                            label: 'Wet threshold',
-                            description: 'The humidity above which the reading will turn blue',
-                            min: 0,
-                            max: 100,
-                            default: 60,
-                            postfix: "%",
-                        },
-                    ]
+                    id: 'dry_threshold',
+                    type: 'number',
+                    label: 'Dry',
+                    description: 'The humidity below which the reading will turn orange',
+                    min: 0,
+                    max: 100,
+                    default: 30,
+                    postfix: "%",
+                },
+                {
+                    id: 'wet_threshold',
+                    type: 'number',
+                    label: 'Wet',
+                    description: 'The humidity above which the reading will turn blue',
+                    min: 0,
+                    max: 100,
+                    default: 60,
+                    postfix: "%",
                 },
             ]
         },
