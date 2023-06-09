@@ -79,7 +79,7 @@ export class LightStandardDevice extends DeviceInstance {
     }
 
     async dispose() {
-        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, PinState.LOW);
+        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, this.computePinState(false));
         await this.physicalSwitch?.dispose();
     }
 
