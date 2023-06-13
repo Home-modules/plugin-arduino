@@ -113,7 +113,7 @@ export class SimplePhysicalSwitch {
         if (pin === this.setting("pin")) {
             if (this.setting("type") === "mom") {
                 if(
-                    state === (this.setting("invert") ? PinState.HIGH : PinState.LOW) && 
+                    state === (this.setting("invert") ? PinState.LOW : PinState.HIGH) && 
                     Date.now() - this.lastPinChange > 100 // More than 100ms elapsed, used to debounce
                 ) {
                     this.onToggle();
