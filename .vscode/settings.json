@@ -1,0 +1,10 @@
+{
+    "cSpell.useGitignore": false,
+    "cSpell.ignorePaths": [
+        "package-lock.json",
+        "vscode-extension",
+        ".git/objects",
+        ".vscode",
+        ".vscode-insiders"
+    ]
+}

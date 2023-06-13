@@ -19,7 +19,6 @@ export default class ArduinoSerialController extends RoomControllerInstance {
             required: true,
             allowCustomValue: true,
             checkCustomValue: true,
-            showSearchBar: 5,
             options: {
                 isLazy: true,
                 loadOn: "render",
