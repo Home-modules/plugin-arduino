@@ -124,7 +124,7 @@ export class SimplePhysicalSwitch {
 
                     // Toggle the device on click
                     case "toggle": {
-                        if (pressed && Date.now() - this.lastPress > 100 /*debounce*/) {
+                        if (pressed && Date.now() - this.lastPinChange > 100 /*debounce*/) {
                             this.onToggle();
                         }
                     }
