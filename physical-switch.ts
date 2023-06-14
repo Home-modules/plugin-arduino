@@ -1,6 +1,8 @@
-import { SettingsFieldDef } from "../../src/plugins.js";
-import { ArduinoCommand, PinMode, ArduinoEvent } from "./arduino.js";
+import { Log, SettingsFieldDef } from "../../src/plugins.js";
+import { ArduinoCommand, PinMode, ArduinoEvent, PinState } from "./arduino.js";
 import ArduinoSerialController from "./room-controllers/arduino_serial.js";
+
+const log = new Log("physical-switch");
 
 export const simplePhysicalSwitchSettingsFields: SettingsFieldDef[] = [
     {
@@ -110,6 +112,12 @@ export class SimplePhysicalSwitch {
     onPinChanged(data: Buffer) {
         const pin = data[0];
         const pressed = Boolean(data[1]) !== this.setting("invert");
+
+        log.i("Pin", pin, "toggled, set to ", PinState[data[1]], "=", pressed ? "pressed":"released");
+        log.d("Δt toggle:", Date.now() - this.lastPinChange);
+        log.d("Δt press:", Date.now() - this.lastPress);
+        log.d("Δt release:", Date.now() - this.lastRelease);
+
         if (pin === this.setting("pin")) {
             if (this.setting("type") === "mom") {
                 switch (this.setting("mom_type")) {
