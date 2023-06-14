@@ -38,12 +38,16 @@ export class LightStandardDevice extends DeviceInstance {
 
     constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
         super(properties, roomController);
-        const physicalSwitchPin = properties.params['physical-switch'];
         if (properties.params['physical_switch_enable']) {
-            this.physicalSwitch = new SimplePhysicalSwitch(this.roomController, properties.params as SwitchSettings, async() => {
-                await this.toggleMainToggle();
-                await this.updateState(false);
-            });
+            this.physicalSwitch = new SimplePhysicalSwitch(
+                ()=> this.mainToggleState,
+                this.roomController,
+                properties.params as SwitchSettings,
+                async () => {
+                    await this.toggleMainToggle();
+                    await this.updateState(false);
+                }
+            );
         }
     }
 

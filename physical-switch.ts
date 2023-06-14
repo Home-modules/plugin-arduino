@@ -1,18 +1,8 @@
 import { SettingsFieldDef } from "../../src/plugins.js";
-import { ArduinoCommand, PinMode, ArduinoEvent, PinState } from "./arduino.js";
+import { ArduinoCommand, PinMode, ArduinoEvent } from "./arduino.js";
 import ArduinoSerialController from "./room-controllers/arduino_serial.js";
 
 export const simplePhysicalSwitchSettingsFields: SettingsFieldDef[] = [
-    // {
-    //     id: 'physical-switch',
-    //     type: 'number',
-    //     label: "Physical switch pin (optional)",
-    //     description: 'An optional physical switch connected to GND. Set to -1 to disable.',
-    //     default: -1,
-    //     min: -1,
-    //     max: 100,
-    //     scrollable: true
-    // }
     {
         type: "container",
         label: "Physical switch",
@@ -71,7 +61,14 @@ export const simplePhysicalSwitchSettingsFields: SettingsFieldDef[] = [
                     { value: "toggle", label: "Press to toggle" },
                     { value: "hold", label: "Hold to turn on" },
                     { value: "mixed", label: "Hybrid" }
-                ]
+                ],
+                default: "toggle",
+                condition: {
+                    type: "compare",
+                    a: {type: "fieldValue", id: "physical_switch_type"},
+                    op: "==",
+                    b: "mom"
+                }
             }
         ]
     }
@@ -91,15 +88,18 @@ type unslice<T extends string> = `physical_switch_${T}`
 
 export class SimplePhysicalSwitch {
     lastPinChange: number = Number.NEGATIVE_INFINITY;
+    lastPress: number = Number.NEGATIVE_INFINITY;
+    lastRelease: number = Number.NEGATIVE_INFINITY;
 
-    constructor(public roomController: ArduinoSerialController, public settings: SwitchSettings, public onToggle: () => void) {
+    constructor(public getState: ()=>boolean, public roomController: ArduinoSerialController, public settings: SwitchSettings, public onToggle: () => void) {
         roomController.on(ArduinoEvent.pinChange, this.onPinChanged.bind(this));
     }
 
-    setting<T extends slice<keyof SwitchSettings>>(name: T): SwitchSettings[unslice<T>] { return this.settings[("physical_switch_" + name) as unslice<T>];}
+    setting<T extends slice<keyof SwitchSettings>>(name: T): SwitchSettings[unslice<T>] { return this.settings[("physical_switch_" + name) as unslice<T>]; }
 
     async init() {
-        await this.roomController.sendCommand(ArduinoCommand.pinMode, this.setting("pin"), PinMode.INPUT_PULLUP);
+        const enablePullup = this.setting("invert") && this.setting("pullup");
+        await this.roomController.sendCommand(ArduinoCommand.pinMode, this.setting("pin"), enablePullup ? PinMode.INPUT_PULLUP : PinMode.INPUT);
         await this.roomController.sendCommand(ArduinoCommand.listenPin, this.setting("pin"), 1 /*true*/);
     }
 
@@ -109,19 +109,46 @@ export class SimplePhysicalSwitch {
 
     onPinChanged(data: Buffer) {
         const pin = data[0];
-        const state: PinState = data[1];
+        const pressed = Boolean(data[1]) === this.setting("invert");
         if (pin === this.setting("pin")) {
             if (this.setting("type") === "mom") {
-                if(
-                    state === (this.setting("invert") ? PinState.LOW : PinState.HIGH) && 
-                    Date.now() - this.lastPinChange > 100 // More than 100ms elapsed, used to debounce
-                ) {
-                    this.onToggle();
+                switch (this.setting("mom_type")) {
+
+                    // Toggle the device on click
+                    case "toggle": {
+                        if (pressed && Date.now() - this.lastPress > 100 /*debounce*/) {
+                            this.onToggle();
+                        }
+                    }
+
+                    // Hold the button to keep the device on
+                    case "hold": {
+                        if(
+                            this.getState() !== pressed &&
+                            Date.now() - (pressed ? this.lastPress : this.lastRelease) > 100 // debounce
+                        ) 
+                            this.onToggle();
+                    }
+
+                    // Hold to turn on, 
+                    case "mixed": {
+                        if(pressed && Date.now() - this.lastPress > 100 /*debounce*/) { // Press
+                            this.onToggle(); // Press always toggles
+                        }
+                        if((!pressed) && Date.now() - this.lastRelease > 100 /*debounce*/) { // Release
+                            if(Date.now() - this.lastPress > 300) { // Held down for over 300ms
+                                if(this.getState()) this.onToggle(); // Turn off but not on
+                            }
+                        }
+                    }
                 }
             } else {
-                this.onToggle();
+                if(Date.now() - this.lastPinChange > 100)
+                    this.onToggle();
             }
             this.lastPinChange = Date.now();
+            if(pressed) this.lastPress = Date.now();
+            else this.lastRelease = Date.now();
         }
     }
 }
