@@ -124,6 +124,16 @@ export class SimplePhysicalSwitch {
 
                     // Toggle the device on click
                     case "toggle": {
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
+                        log.d("IT IS EXECUTEDDDD");
                         if (pressed && Date.now() - this.lastPinChange > 100 /*debounce*/) {
                             this.onToggle();
                         }
