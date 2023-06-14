@@ -124,19 +124,10 @@ export class SimplePhysicalSwitch {
 
                     // Toggle the device on click
                     case "toggle": {
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        log.d("IT IS EXECUTEDDDD");
-                        if (pressed && Date.now() - this.lastPinChange > 100 /*debounce*/) {
+                        if (pressed && Date.now() - this.lastPress > 100 /*debounce*/) {
                             this.onToggle();
                         }
+                        break;
                     }
 
                     // Hold the button to keep the device on
@@ -146,6 +137,7 @@ export class SimplePhysicalSwitch {
                             Date.now() - (pressed ? this.lastPress : this.lastRelease) > 100 // debounce
                         ) 
                             this.onToggle();
+                        break;
                     }
 
                     // Hold to turn on, 
@@ -158,6 +150,7 @@ export class SimplePhysicalSwitch {
                                 if(this.getState()) this.onToggle(); // Turn off but not on
                             }
                         }
+                        break;
                     }
                 }
             } else {
