@@ -109,7 +109,7 @@ export class SimplePhysicalSwitch {
 
     onPinChanged(data: Buffer) {
         const pin = data[0];
-        const pressed = Boolean(data[1]) === this.setting("invert");
+        const pressed = Boolean(data[1]) !== this.setting("invert");
         if (pin === this.setting("pin")) {
             if (this.setting("type") === "mom") {
                 switch (this.setting("mom_type")) {
