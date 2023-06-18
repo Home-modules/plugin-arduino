@@ -183,6 +183,12 @@ export class LightRGBDevice extends DeviceInstance {
         await this.setPinValues();
     }
 
+    override async dispose() {
+        if (this.mainToggleState) this.toggleMainToggle();
+        // await this.physicalSwitch?.dispose();
+        await super.dispose();
+    }
+
     override async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
         await this.setPinValues();
@@ -224,7 +230,7 @@ export class LightRGBDevice extends DeviceInstance {
     }
 
     async setPinValues() {
-        Promise.all([
+        return Promise.all([
             this.setPinValue("red"),
             this.setPinValue("green"),
             this.setPinValue("blue")

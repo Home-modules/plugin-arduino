@@ -74,8 +74,9 @@ export class LightStandardDevice extends DeviceInstance {
     }
 
     async dispose() {
-        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, this.computePinState(false));
+        if (this.mainToggleState) this.toggleMainToggle();
         await this.physicalSwitch?.dispose();
+        await super.dispose();
     }
 
     computePinState(state: boolean): PinState {
