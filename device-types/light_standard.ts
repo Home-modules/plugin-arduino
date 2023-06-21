@@ -3,7 +3,7 @@ import ArduinoSerialController from "../room-controllers/arduino_serial.js";
 import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
 import { SimplePhysicalSwitch, simplePhysicalSwitchSettingsFields, SwitchSettings } from "../physical-switch.js";
 
-const log = new Log('light:standard')
+const log = new Log('light:standard');
 
 export class LightStandardDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:standard";

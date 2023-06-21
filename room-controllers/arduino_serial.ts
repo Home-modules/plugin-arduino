@@ -60,7 +60,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
     ];
 
 
-    serialPort: InstanceType<typeof SerialPort>;
+    serialPort: SerialPort;
     parser: ReadlineParser;
     eventListeners: Record<number, ((data: Buffer) => void)[]> = {};
 
@@ -103,13 +103,29 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                     this.disable(error.message);
                     resolve();
                 } else {
+
+                    // Set flags
+                    this.serialPort.set({
+                        dtr: true
+                    });
+                    setTimeout(() => {
+                        this.serialPort.set({
+                            dtr: false
+                        });
+                    }, 500);
+
+                    let receivedMessage = false;
+
                     this.parser.on('data', (data: string) => {
                         const buffer = Buffer.from(data, 'hex');
                         log.i(this.id, 'Data received from Arduino:', buffer.toString(), buffer);
+
                         if (buffer[0] === ArduinoEvent.start) {
+                            receivedMessage = true;
                             const arduinoVersion = buffer.slice(1).toString();
                             if (arduinoVersion !== correctArduinoVersion) {
                                 this.disable(`The firmware on the Room Controller is incompatible (expected '${correctArduinoVersion}', got '${arduinoVersion}')`);
+                                if(this.serialPort.isOpen) this.serialPort.close();
                             }
                             resolve();
                             return;
@@ -118,6 +134,14 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                         const rest = buffer.slice(1);
                         this.eventListeners[event]?.forEach(listemer => listemer(rest));
                     });
+
+                    setTimeout(() => {
+                        if (!receivedMessage) {
+                            this.disable("No response from room controller (timeout of 5 seconds exceeded)");
+                            if(this.serialPort.isOpen) this.serialPort.close();
+                            resolve();
+                        }
+                    }, 5000);
                 }
             });
         });
