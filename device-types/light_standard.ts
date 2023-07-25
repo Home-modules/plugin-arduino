@@ -1,9 +1,9 @@
 import { DeviceInstance, HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
 import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
-import { SimplePhysicalSwitch, simplePhysicalSwitchSettingsFields, SwitchSettings } from "../physical-switch.js";
+import { SimplePhysicalSwitch } from "../physical-switch.js";
 
-const log = new Log('light:standard');
+const log = new Log('light:standard')
 
 export class LightStandardDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:standard";
@@ -30,7 +30,16 @@ export class LightStandardDevice extends DeviceInstance {
             description: 'Currently pin will be LOW when off and HIGH when on',
             description_on_true: 'Currently pin will be HIGH when off and LOW when on',
         },
-        ...simplePhysicalSwitchSettingsFields
+        {
+            id: 'physical-switch',
+            type: 'number',
+            label: "Physical switch pin (optional)",
+            description: 'An optional physical switch connected to GND. Set to -1 to disable.',
+            default: -1,
+            min: -1,
+            max: 100,
+            scrollable: true
+        }
     ];
     static hasMainToggle = true;
 
@@ -38,16 +47,12 @@ export class LightStandardDevice extends DeviceInstance {
 
     constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
         super(properties, roomController);
-        if (properties.params['physical_switch_enable']) {
-            this.physicalSwitch = new SimplePhysicalSwitch(
-                ()=> this.mainToggleState,
-                this.roomController,
-                properties.params as SwitchSettings,
-                async () => {
-                    await this.toggleMainToggle();
-                    await this.updateState(false);
-                }
-            );
+        const physicalSwitchPin = properties.params['physical-switch'];
+        if (typeof physicalSwitchPin === 'number' && (!isNaN(physicalSwitchPin)) && physicalSwitchPin !== -1) {
+            this.physicalSwitch = new SimplePhysicalSwitch(this.roomController, physicalSwitchPin, async() => {
+                await this.toggleMainToggle();
+                await this.updateState(false);
+            });
         }
     }
 
@@ -74,9 +79,8 @@ export class LightStandardDevice extends DeviceInstance {
     }
 
     async dispose() {
-        if (this.mainToggleState) this.toggleMainToggle();
+        await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, PinState.LOW);
         await this.physicalSwitch?.dispose();
-        await super.dispose();
     }
 
     computePinState(state: boolean): PinState {

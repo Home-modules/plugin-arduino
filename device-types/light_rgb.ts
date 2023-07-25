@@ -183,12 +183,6 @@ export class LightRGBDevice extends DeviceInstance {
         await this.setPinValues();
     }
 
-    override async dispose() {
-        if (this.mainToggleState) this.toggleMainToggle();
-        // await this.physicalSwitch?.dispose();
-        await super.dispose();
-    }
-
     override async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
         await this.setPinValues();
@@ -218,7 +212,7 @@ export class LightRGBDevice extends DeviceInstance {
                     "purple": [75, 0, 100],
                     "pink": [100, 75, 75],
                     "brown": [80, 42, 16],
-                })[colorName];
+                })[colorName!];
                 await Promise.all([
                     this.sendInteractionAction("red", { "type": "setSliderValue", "value": rgb[0] }),
                     this.sendInteractionAction("green", { "type": "setSliderValue", "value": rgb[1] }),
@@ -230,7 +224,7 @@ export class LightRGBDevice extends DeviceInstance {
     }
 
     async setPinValues() {
-        return Promise.all([
+        Promise.all([
             this.setPinValue("red"),
             this.setPinValue("green"),
             this.setPinValue("blue")
