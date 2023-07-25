@@ -1,6 +1,6 @@
 {
   "name": "hmp-arduino",
-  "version": "0.0.6",
+  "version": "0.0.7-dev2",
   "title": "Arduino",
   "description": "Home_modules plugin for Arduino room controllers and basic devices.",
   "main": "arduino.js",
