@@ -76,6 +76,12 @@ export class LightDimmableDevice extends DeviceInstance {
         await this.setPinValue();
     }
 
+    override async dispose() {
+        if (this.mainToggleState) this.toggleMainToggle();
+        // await this.physicalSwitch?.dispose();
+        await super.dispose();
+    }
+
     override async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
         await this.setPinValue();
