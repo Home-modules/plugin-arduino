@@ -151,9 +151,9 @@ export class ThermometerDHTDevice extends DeviceInstance {
             this.disabled = false;
         }
         this.iconColor =
-            temperature < this.settings.cold_threshold ? 'blue' :
-                temperature < this.settings.warm_threshold ? undefined :
-                    temperature < this.settings.hot_threshold ? 'orange' :
+            temperature < (this.settings.cold_threshold as number) ? 'blue' :
+                temperature < (this.settings.warm_threshold as number) ? undefined :
+                    temperature < (this.settings.hot_threshold as number) ? 'orange' :
                         'red';
         const temperatureUnit = this.settings.unit as 'c' | 'f' | 'k';
         if (temperatureUnit === 'f') {
@@ -170,8 +170,8 @@ export class ThermometerDHTDevice extends DeviceInstance {
         };
         this.interactionStates["humidity"] = {
             text: `Humidity: ${humidity.toFixed(1)}%`,
-            color: humidity < this.settings.dry_threshold ? 'orange' :
-                humidity < this.settings.wet_threshold ? undefined :
+            color: humidity < (this.settings.dry_threshold as number) ? 'orange' :
+                humidity < (this.settings.wet_threshold as number) ? undefined :
                     'blue'
         };
 

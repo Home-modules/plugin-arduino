@@ -1,6 +1,6 @@
 {
   "name": "hmp-arduino",
-  "version": "0.0.7-dev4",
+  "version": "0.0.7-dev3",
   "title": "Arduino",
   "description": "Home_modules plugin for Arduino room controllers and basic devices.",
   "main": "arduino.js",
@@ -11,7 +11,7 @@
   },
   "author": "Home_modules (https://github.com/Home-modules)",
   "license": "UNLICENSED",
-  "compatibleWithHub": "0.0.2",
+  "compatibleWithHub": "0.0.3",
   "dependencies": {
     "serialport": "^10.4.0"
   },

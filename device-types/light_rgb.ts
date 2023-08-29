@@ -2,6 +2,21 @@ import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from 
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
 import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
 
+
+type InteractionStates = {
+    color: HMApi.T.DeviceInteraction.State.UIColorInput,
+    brightness: HMApi.T.DeviceInteraction.State.Slider,
+    calib_title: HMApi.T.DeviceInteraction.State.Label,
+    calib_desc: HMApi.T.DeviceInteraction.State.Label,
+    red: HMApi.T.DeviceInteraction.State.Slider,
+    green: HMApi.T.DeviceInteraction.State.Slider,
+    blue: HMApi.T.DeviceInteraction.State.Slider,
+    calib_start: HMApi.T.DeviceInteraction.State.Button,
+    calib_save: HMApi.T.DeviceInteraction.State.Button,
+    calib_cancel: HMApi.T.DeviceInteraction.State.Button,
+    calib_reset: HMApi.T.DeviceInteraction.State.Button,
+}
+
 export class LightRGBDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:rgb";
     static super_name = "Light";
@@ -117,6 +132,14 @@ export class LightRGBDevice extends DeviceInstance {
             step: 1,
             live: true,
         },
+        "calib_title": {
+            type: "label"
+        },
+        "calib_desc": {
+            type: "label",
+            size: "small",
+            defaultValue: "Adjust the color components and click save"
+        },
         "red": {
             type: "slider",
             label: "Red",
@@ -150,20 +173,154 @@ export class LightRGBDevice extends DeviceInstance {
             postfix: "%",
             color: "blue"
         },
-    }
+        "calib_start": {
+            type: "button",
+            label: "Calibrate"
+        },
+        "calib_save": {
+            type: "button",
+            label: "Done",
+            primary: true
+        },
+        "calib_cancel": {
+            type: "button",
+            label: "Cancel"
+        },
+        "calib_reset": {
+            type: "button",
+            label: "Reset to default",
+            attention: true
+        },
+    };
     static defaultInteraction = "color";
 
+    static events: HMApi.T.Automation.DeviceEvent[] = [
+        { id: "on", name: "Turned on" },
+        { id: "off", name: "Turned off" },
+        { id: "toggle", name: "Toggled" },
+    ];
+    static override actions: { id: string; name: string; fields: SettingsFieldDef[]; }[] = [
+        {
+            id: "set-brightness",
+            name: "Set brightness",
+            fields: [
+                {
+                    id: "brightness",
+                    type: "slider",
+                    label: "Brightness",
+                    min: 0,
+                    max: 255,
+                    default: 255,
+                }
+            ]
+        },
+        {
+            id: "set-color",
+            name: "Set color",
+            fields: [
+                {
+                    id: "mode",
+                    type: "radio",
+                    label: "Mode",
+                    options: {
+                        "preset": "Presets",
+                        "custom": "Custom"
+                    },
+                    default: "preset"
+                },
+                {
+                    id: "color",
+                    type: "select",
+                    label: "Color",
+                    options: [
+                        { value: "white", label: "White" },
+                        { value: "red", label: "Red" },
+                        { value: "orange", label: "Orange" },
+                        { value: "yellow", label: "Yellow" },
+                        { value: "green", label: "Green" },
+                        { value: "blue", label: "Blue" },
+                        { value: "purple", label: "Purple" },
+                        { value: "pink", label: "Pink" },
+                        { value: "brown", label: "Brown" }
+                    ],
+                    default: "white",
+                    condition: { type: "compare", op: "==", a: { type: "fieldValue", id: "mode" }, b: "preset" }
+                },
+                {
+                    id: "red",
+                    type: "slider",
+                    label: "Red",
+                    color: "red",
+                    min: 0,
+                    max: 100,
+                    default: 100,
+                    showValue: true,
+                    postfix: "%",
+                    condition: { type: "compare", op: "==", a: { type: "fieldValue", id: "mode" }, b: "custom" }
+                },
+                {
+                    id: "green",
+                    type: "slider",
+                    label: "Green",
+                    color: "green",
+                    min: 0,
+                    max: 100,
+                    default: 100,
+                    showValue: true,
+                    postfix: "%",
+                    condition: { type: "compare", op: "==", a: { type: "fieldValue", id: "mode" }, b: "custom" }
+                },
+                {
+                    id: "blue",
+                    type: "slider",
+                    label: "Blue",
+                    color: "blue",
+                    min: 0,
+                    max: 100,
+                    default: 100,
+                    showValue: true,
+                    postfix: "%",
+                    condition: { type: "compare", op: "==", a: { type: "fieldValue", id: "mode" }, b: "custom" }
+                },
+            ]
+        }
+    ];
+
+    static defaultCalibrations: Record<HMApi.T.UIColorWithWhite, [number, number, number]> = {
+        "white": [100, 100, 100],
+        "red": [100, 0, 0],
+        "orange": [100, 75, 0],
+        "yellow": [100, 100, 25],
+        "green": [0, 100, 0],
+        "blue": [0, 0, 100],
+        "purple": [75, 0, 100],
+        "pink": [100, 75, 75],
+        "brown": [80, 42, 16],
+    };
+    calibrations = {...LightRGBDevice.defaultCalibrations};
+    calibrating: HMApi.T.UIColorWithWhite | undefined;
+
     override interactionStates: Record<string, HMApi.T.DeviceInteraction.State | undefined> = {
-        "color": <HMApi.T.DeviceInteraction.State.UIColorInput>{ color: "white" },
-        "brightness": <HMApi.T.DeviceInteraction.State.Slider>{ value: 255 },
-        "red": <HMApi.T.DeviceInteraction.State.Slider>{ value: 100 },
-        "green": <HMApi.T.DeviceInteraction.State.Slider>{ value: 100 },
-        "blue": <HMApi.T.DeviceInteraction.State.Slider>{ value: 100 },
+        "color": { color: "white" },
+        "brightness": { value: 255 },
+        "calib_title": { visible: false },
+        "calib_desc": { visible: false },
+        "red": { value: 100 },
+        "green": { value: 100 },
+        "blue": { value: 100 },
+        "calib_start": { visible: true },
+        "calib_save": { visible: false },
+        "calib_cancel": { visible: false },
+        "calib_reset": { visible: false },
     };
 
 
     constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
         super(properties, roomController);
+
+        const calibs = this.extraData.calibrations as (typeof this.calibrations) | undefined;
+        if (calibs)
+            this.calibrations = calibs;
     }
 
     override get roomController() {
@@ -191,6 +348,8 @@ export class LightRGBDevice extends DeviceInstance {
 
     override async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
+        this.fireEvent('toggle');
+        this.fireEvent(this.mainToggleState ? 'on' : 'off');
         await this.setPinValues();
     }
 
@@ -205,25 +364,59 @@ export class LightRGBDevice extends DeviceInstance {
             case "green":
             case "blue":
                 await this.setPinValue(interactionId);
+                this.getInteractionState("color").color = undefined;
+                if (!this.calibrating) {
+                    this.getInteractionState("calib_start").visible = false;
+                }
                 break;
             case "color": {
-                const colorName = (this.interactionStates.color as HMApi.T.DeviceInteraction.State.UIColorInput).color;
-                const rgb = (<Record<HMApi.T.UIColorWithWhite, [number, number, number]>>{
-                    "white": [100, 100, 100],
-                    "red": [100, 0, 0],
-                    "orange": [100, 75, 0],
-                    "yellow": [100, 100, 25],
-                    "green": [0, 100, 0],
-                    "blue": [0, 0, 100],
-                    "purple": [75, 0, 100],
-                    "pink": [100, 75, 75],
-                    "brown": [80, 42, 16],
-                })[colorName];
-                await Promise.all([
-                    this.sendInteractionAction("red", { "type": "setSliderValue", "value": rgb[0] }),
-                    this.sendInteractionAction("green", { "type": "setSliderValue", "value": rgb[1] }),
-                    this.sendInteractionAction("blue", { "type": "setSliderValue", "value": rgb[2] }),
-                ]);
+                const colorName = this.getInteractionState("color").color;
+                if (!colorName)
+                    break;
+                this.setCalibrating(false);
+                const rgb = this.calibrations[colorName];
+                this.getInteractionState("red").value = rgb[0];
+                this.getInteractionState("green").value = rgb[1];
+                this.getInteractionState("blue").value = rgb[2];
+                await this.setPinValues();
+                break;
+            }
+            case "calib_start": {
+                if (this.getInteractionState("color").color) {
+                    this.setCalibrating(true);
+                }
+                break;
+            }
+            case "calib_save": {
+                const calibrating = this.calibrating;
+                if (calibrating) {
+                    this.setCalibrating(false);
+                    this.calibrations[calibrating] = [
+                        this.getInteractionState("red").value,
+                        this.getInteractionState("green").value,
+                        this.getInteractionState("blue").value,
+                    ];
+                    this.sendInteractionAction("color", { type: "setUIColorInputValue", color: calibrating });
+                    this.writeExtraData({ calibrations: this.calibrations });
+                }
+                break;
+            }
+            case "calib_cancel": {
+                const calibrating = this.calibrating;
+                if (calibrating) {
+                    this.setCalibrating(false);
+                    this.sendInteractionAction("color", { type: "setUIColorInputValue", color: calibrating });
+                }
+                break;
+            }
+            case "calib_reset": {
+                const calibrating = this.calibrating;
+                if (calibrating) {
+                    this.setCalibrating(false);
+                    this.calibrations[calibrating] = LightRGBDevice.defaultCalibrations[calibrating];
+                    this.sendInteractionAction("color", { type: "setUIColorInputValue", color: calibrating });
+                    this.writeExtraData({ calibrations: this.calibrations });
+                }
                 break;
             }
         }
@@ -261,5 +454,45 @@ export class LightRGBDevice extends DeviceInstance {
         if (val === undefined)
             val = fallback;
         return val as T;
+    }
+
+    getInteractionState<T extends keyof InteractionStates>(name: T) {
+        return this.interactionStates[name] as InteractionStates[T];
+    }
+
+    setCalibrating(isCalibrating: boolean) {
+        const color = this.getInteractionState("color").color;
+        this.getInteractionState("color").visible = !isCalibrating;
+        this.getInteractionState("brightness").visible = !isCalibrating;
+        this.getInteractionState("calib_start").visible = (!isCalibrating) && (!!color);
+        this.getInteractionState("calib_save").visible = isCalibrating;
+        this.getInteractionState("calib_cancel").visible = isCalibrating;
+        this.getInteractionState("calib_reset").visible = isCalibrating;
+        this.getInteractionState("calib_title").visible = isCalibrating;
+        this.getInteractionState("calib_title").text = isCalibrating ? `Calibrating ${color![0].toUpperCase() + color!.slice(1)}` : "";
+        this.getInteractionState("calib_desc").visible = isCalibrating;
+        this.calibrating = isCalibrating ? color : undefined;
+    }
+
+    async performAction(id: string, settings: Record<string, string | number | boolean>): Promise<void> {
+        if (this.calibrating) return;
+        if (id === "set-brightness") {
+            const brightness = settings.brightness as number;
+            this.interactionStates.brightness = { value: brightness };
+            await this.setPinValues();
+        }
+        else if (id === "set-color") {
+            const mode = settings.mode as 'preset' | 'custom';
+            if (mode === 'preset') {
+                this.sendInteractionAction("color", { type: "setUIColorInputValue", color: settings.color as HMApi.T.UIColorWithWhite });
+            } else {
+                this.interactionStates.red = { value: settings.red as number };
+                this.interactionStates.green = { value: settings.green as number };
+                this.interactionStates.blue = { value: settings.blue as number };
+                await this.setPinValues();
+                this.getInteractionState("color").color = undefined;
+                this.getInteractionState("calib_start").visible = false;
+            }
+        }
     }
 }

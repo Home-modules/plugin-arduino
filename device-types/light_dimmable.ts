@@ -1,6 +1,6 @@
 import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
 import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
+import { ArduinoCommand, PinMode } from "../arduino.js";
 
 export class LightDimmableDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:dimmable";
@@ -47,8 +47,30 @@ export class LightDimmableDevice extends DeviceInstance {
             step: 1,
             live: true,
         }
-    }
+    };
     static defaultInteraction = "brightness";
+    
+    static events: HMApi.T.Automation.DeviceEvent[] = [
+        { id: "on", name: "Turned on" },
+        { id: "off", name: "Turned off" },
+        { id: "toggle", name: "Toggled" },
+    ];
+    static override actions: { id: string; name: string; fields: SettingsFieldDef[]; }[] = [
+        {
+            id: "set-brightness",
+            name: "Set brightness",
+            fields: [
+                {
+                    id: "brightness",
+                    type: "slider",
+                    label: "Brightness",
+                    min: 0,
+                    max: 255,
+                    default: 255,
+                }
+            ]
+        }
+    ];
 
     override interactionStates: Record<string, HMApi.T.DeviceInteraction.State | undefined> = {
         "brightness": <HMApi.T.DeviceInteraction.State.Slider>{
@@ -84,6 +106,8 @@ export class LightDimmableDevice extends DeviceInstance {
 
     override async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
+        this.fireEvent('toggle');
+        this.fireEvent(this.mainToggleState ? 'on' : 'off');
         await this.setPinValue();
     }
 
@@ -105,5 +129,13 @@ export class LightDimmableDevice extends DeviceInstance {
         }
         res = this.settings.invert ? 255 - res : res;
         await this.roomController.sendCommand(ArduinoCommand.analogWrite, this.settings.pin as number, res);
+    }
+
+    async performAction(id: string, settings: Record<string, string | number | boolean>): Promise<void> {
+        if (id === "set-brightness") {
+            const brightness = settings.brightness as number;
+            this.interactionStates.brightness = { value: brightness };
+            await this.setPinValue();
+        }
     }
 }

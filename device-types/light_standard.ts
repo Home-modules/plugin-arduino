@@ -34,6 +34,12 @@ export class LightStandardDevice extends DeviceInstance {
     ];
     static hasMainToggle = true;
 
+    static events: HMApi.T.Automation.DeviceEvent[] = [
+        { id: "on", name: "Turned on" },
+        { id: "off", name: "Turned off" },
+        { id: "toggle", name: "Toggled" },
+    ];
+
     physicalSwitch?: SimplePhysicalSwitch;
 
     constructor(properties: HMApi.T.Device, roomController: RoomControllerInstance) {
@@ -70,6 +76,8 @@ export class LightStandardDevice extends DeviceInstance {
 
     async toggleMainToggle(): Promise<void> {
         await super.toggleMainToggle();
+        this.fireEvent('toggle');
+        this.fireEvent(this.mainToggleState ? 'on' : 'off');
         await this.roomController.sendCommand(ArduinoCommand.digitalWrite, this.settings.pin as number, this.computePinState(this.mainToggleState));
     }
 
