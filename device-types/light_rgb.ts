@@ -321,6 +321,10 @@ export class LightRGBDevice extends DeviceInstance {
         const calibs = this.extraData.calibrations as (typeof this.calibrations) | undefined;
         if (calibs)
             this.calibrations = calibs;
+
+        this.getInteractionState('red').value = this.calibrations.white[0];
+        this.getInteractionState('green').value = this.calibrations.white[1];
+        this.getInteractionState('blue').value = this.calibrations.white[2];
     }
 
     override get roomController() {
