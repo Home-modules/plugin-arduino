@@ -3,7 +3,7 @@
   "version": "0.0.7-dev6",
   "title": "Arduino",
   "description": "Home_modules plugin for Arduino room controllers and basic devices.",
-  "main": "arduino.js",
+  "main": "arduino.ts",
   "type": "module",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   },
   "author": "Home_modules (https://github.com/Home-modules)",
   "license": "UNLICENSED",
-  "compatibleWithHub": "0.0.3",
+  "compatibleWithHub": "0.0.4",
   "dependencies": {
     "serialport": "^10.4.0"
   },
