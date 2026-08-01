@@ -1,6 +1,6 @@
-import { Log, SettingsFieldDef } from "../../src/plugins.js";
-import { ArduinoCommand, PinMode, ArduinoEvent, PinState } from "./arduino.js";
-import ArduinoSerialController from "./room-controllers/arduino_serial.js";
+import { Log, SettingsFieldDef } from "../../src/plugins";
+import { ArduinoCommand, PinMode, ArduinoEvent, PinState } from "./arduino";
+import ArduinoSerialController from "./room-controllers/arduino_serial";
 
 const log = new Log("physical-switch");
 

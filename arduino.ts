@@ -1,9 +1,9 @@
-import { registerRoomController, registerDeviceType } from "../../src/plugins.js";
-import { LightStandardDevice } from "./device-types/light_standard.js";
-import ArduinoSerialController from "./room-controllers/arduino_serial.js";
-import { ThermometerDHTDevice } from "./device-types/thermometer_dht.js";
-import { LightDimmableDevice } from "./device-types/light_dimmable.js";
-import { LightRGBDevice } from "./device-types/light_rgb.js";
+import { registerRoomController, registerDeviceType } from "../../src/plugins";
+import { LightStandardDevice } from "./device-types/light_standard";
+import ArduinoSerialController from "./room-controllers/arduino_serial";
+import { ThermometerDHTDevice } from "./device-types/thermometer_dht";
+import { LightDimmableDevice } from "./device-types/light_dimmable";
+import { LightRGBDevice } from "./device-types/light_rgb";
 
 export enum ArduinoCommand {
     pinMode = 0,

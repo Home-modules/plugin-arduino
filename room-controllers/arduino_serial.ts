@@ -1,7 +1,6 @@
-import { ReadlineParser, SerialPort } from "serialport";
-import { HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
-import arduinoBoards from "../boards.js";
-import { ArduinoCommand, ArduinoEvent } from "../arduino.js";
+import { SerialPort, ReadlineParser } from 'tiny-serial'
+import { HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins";
+import { ArduinoCommand, ArduinoEvent } from "../arduino";
 
 const log = new Log("controllers/arduino:serial");
 
@@ -38,7 +37,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                     return ports.map(port => ({
                         value: port.path,
                         label: port.path,
-                        subtext: arduinoBoards[port.vendorId + '-' + port.productId]
+                        // subtext: arduinoBoards[port.vendorId + '-' + port.productId]
                     }));
                 },
             }
@@ -77,8 +76,7 @@ export default class ArduinoSerialController extends RoomControllerInstance {
 
         this.serialPort = new SerialPort({
             path: properties.controllerType.settings.port as string,
-            baudRate: properties.controllerType.settings.baudrate as number,
-            autoOpen: false,
+            baudRate: properties.controllerType.settings.baudrate as number
         });
 
         this.parser = this.serialPort.pipe(new ReadlineParser({
@@ -96,69 +94,66 @@ export default class ArduinoSerialController extends RoomControllerInstance {
                 this.disable("Serial port closed");
             }
         });
-        await new Promise<void>((resolve) => {
-            this.serialPort.open((error) => {
-                log.i('Opened serial port', this.serialPort.path);
-                if (error) {
-                    this.disable(error.message);
-                    resolve();
-                } else {
 
-                    // Set flags
-                    this.serialPort.set({
-                        dtr: true
-                    });
-                    setTimeout(() => {
-                        this.serialPort.set({
-                            dtr: false
-                        });
-                    }, 500);
+        try {
+            await this.serialPort.open();
+            log.i('Opened serial port', this.serialPort.path);
 
-                    let receivedMessage = false;
+            // Set flags
+            // this.serialPort.set({
+            //     dtr: true
+            // });
+            // setTimeout(() => {
+            //     this.serialPort.set({
+            //         dtr: false
+            //     });
+            // }, 500);
 
-                    this.parser.on('data', (data: string) => {
-                        const buffer = Buffer.from(data, 'hex');
-                        log.i(this.id, 'Data received from Arduino:', buffer.toString(), buffer);
+            let receivedMessage = false;
 
-                        if (buffer[0] === ArduinoEvent.start) {
-                            receivedMessage = true;
-                            const arduinoVersion = buffer.slice(1).toString();
-                            if (arduinoVersion !== correctArduinoVersion) {
-                                this.disable(`The firmware on the Room Controller is incompatible (expected '${correctArduinoVersion}', got '${arduinoVersion}')`);
-                                if(this.serialPort.isOpen) this.serialPort.close();
-                            }
-                            resolve();
-                            return;
-                        }
-                        const event = buffer[0];
-                        const rest = buffer.slice(1);
-                        this.eventListeners[event]?.forEach(listemer => listemer(rest));
-                    });
-
-                    setTimeout(() => {
-                        if (!receivedMessage) {
-                            this.disable("No response from room controller (timeout of 5 seconds exceeded)");
+            await new Promise<void>((resolve)=> {
+                this.parser.on('data', (data: string) => {
+                    const buffer = Buffer.from(data, 'hex');
+                    log.i(this.id, 'Data received from Arduino:', buffer.toString(), buffer);
+    
+                    if (buffer[0] === ArduinoEvent.start) {
+                        receivedMessage = true;
+                        const arduinoVersion = buffer.slice(1).toString();
+                        if (arduinoVersion !== correctArduinoVersion) {
+                            this.disable(`The firmware on the Room Controller is incompatible (expected '${correctArduinoVersion}', got '${arduinoVersion}')`);
                             if(this.serialPort.isOpen) this.serialPort.close();
-                            resolve();
                         }
-                    }, 5000);
-                }
-            });
-        });
+                        resolve();
+                        return;
+                    }
+                    const event = buffer[0];
+                    const rest = buffer.slice(1);
+                    this.eventListeners[event]?.forEach(listener => listener(rest));
+                });
+    
+                setTimeout(() => {
+                    if (!receivedMessage) {
+                        this.disable("No response from room controller (timeout of 5 seconds exceeded)");
+                        if(this.serialPort.isOpen) this.serialPort.close();
+                        resolve();
+                    }
+                }, 5000);
+            })
+        } catch(error) {
+            this.disable((error as Error).message);
+        }
         return super.init();
     }
 
     async dispose(): Promise<void> {
         await super.dispose();
         if (this.serialPort.isOpen) {
-            await new Promise<void>((resolve) => {
-                this.serialPort.close(() => resolve());
-            });
+            await this.serialPort.close();
         }
         this.serialPort.destroy();
     }
 
-    static async validateSettings(settings: Record<string, string | number | boolean>): Promise<string | void> {
+    static async validateSettings(settings: Record<string, string | number | boolean>): Promise<string | undefined> {
         const port = settings["port"] as string;
         const ports = (await SerialPort.list()).map(p => p.path);
         if (!ports.includes(port)) {
@@ -177,18 +172,15 @@ export default class ArduinoSerialController extends RoomControllerInstance {
         const serial = this.serialPort;
         log.i('Sending command to', serial.path, command, pin, value);
         if (serial.isOpen) {
-            await new Promise<void>((resolve) => {
-                serial.write((
+            try {
+                serial.write(Buffer.from(new Uint8Array(
                     value === undefined ?
                         [command, pin] :
                         [command, pin, value]
-                ), error => {
-                    if (error) {
-                        this.disable(error.message);
-                    }
-                    resolve();
-                });
-            });
+                )));
+            } catch(e) {
+                this.disable((e as Error).message);
+            }
         } else {
             this.disable(`Port ${port} is closed. Please restart the room controller.`);
         }

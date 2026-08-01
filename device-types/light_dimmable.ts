@@ -1,6 +1,6 @@
-import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
-import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommand, PinMode } from "../arduino.js";
+import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins";
+import ArduinoSerialController from "../room-controllers/arduino_serial";
+import { ArduinoCommand, PinMode } from "../arduino";
 
 export class LightDimmableDevice extends DeviceInstance {
     static id: `${string}:${string}` = "light:dimmable";

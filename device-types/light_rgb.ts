@@ -1,6 +1,6 @@
-import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
-import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
+import { DeviceInstance, HMApi, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins";
+import ArduinoSerialController from "../room-controllers/arduino_serial";
+import { ArduinoCommand, PinMode, PinState } from "../arduino";
 
 
 type InteractionStates = {

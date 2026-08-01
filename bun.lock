@@ -1,0 +1,34 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "hmp-arduino",
+      "dependencies": {
+        "tiny-serial": "^2.0.0",
+      },
+      "devDependencies": {
+        "typescript": "^4.5.5",
+      },
+    },
+  },
+  "packages": {
+    "tiny-serial": ["tiny-serial@2.0.0", "", { "optionalDependencies": { "tiny-serial-darwin-arm64": "2.0.0", "tiny-serial-darwin-x64": "2.0.0", "tiny-serial-linux-arm-gnueabihf": "2.0.0", "tiny-serial-linux-arm64-gnu": "2.0.0", "tiny-serial-linux-x64-gnu": "2.0.0", "tiny-serial-linux-x64-musl": "2.0.0", "tiny-serial-win32-x64-msvc": "2.0.0" } }, "sha512-yZGgTvfmUQ09f7Qjer+84LQW8IneCPQJKZc8M2oE6n1hdT67c+OrLLXi3BtxX6DOvJfwgW0HdLFGeDnNIs0hQQ=="],
+
+    "tiny-serial-darwin-arm64": ["tiny-serial-darwin-arm64@2.0.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-ik+Z1gKCC77cV4zvrOxY9YV6nIZwDLd46mRtcl3EhTHvOCVeLQJtro0VJtZ921VgTO/AYDUSbg49PUo2thHtBw=="],
+
+    "tiny-serial-darwin-x64": ["tiny-serial-darwin-x64@2.0.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-xCnP++IAYqthNpZI6dPgD326Mf+sDBrYdQcgs4MRW6dWag/Ec3b9ypFiugxirHPQ39u5nGBchAM6DQTUOb62gg=="],
+
+    "tiny-serial-linux-arm-gnueabihf": ["tiny-serial-linux-arm-gnueabihf@2.0.0", "", { "os": "linux", "cpu": "arm" }, "sha512-ZIBY4h7k78ymEl38cimb+59BeAQ/ry9y/Rw0GqW8XVzWkuIjvE2/YPhspFHWFejbHCGqR+pzFO2JR4hVhq0y+g=="],
+
+    "tiny-serial-linux-arm64-gnu": ["tiny-serial-linux-arm64-gnu@2.0.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-lGmiCnOgFdo8yamniM/UL2KbjCMlvYV9dBw+0WbgVaGgEtj4ZPL82VYuZbJkHMeXiRPkwP77JwJX5emRB4kdLA=="],
+
+    "tiny-serial-linux-x64-gnu": ["tiny-serial-linux-x64-gnu@2.0.0", "", { "os": "linux", "cpu": "x64" }, "sha512-ruQ3mGON/hstXdlxeGtwrb4akq+M9NBy+jeSdpMthLU3VsstL9Ra8n9yjcb0PKIPGXivjBGGPFa5fMcS/Ir+5A=="],
+
+    "tiny-serial-linux-x64-musl": ["tiny-serial-linux-x64-musl@2.0.0", "", { "os": "linux", "cpu": "x64" }, "sha512-Omli+ALEOByshWXjDwufTyU0FlCku5RF0+HxSXtcv417GxGzFO27caYLkmrArWSK5+oQO3DRps4quXQzsyVurg=="],
+
+    "tiny-serial-win32-x64-msvc": ["tiny-serial-win32-x64-msvc@2.0.0", "", { "os": "win32", "cpu": "x64" }, "sha512-QTcFk7ooQteeYJ075m3DuUf3sSVPf+WgdYZ5uy9B4gV8urof6NGkL7VBrTwuayKsogIq4MUdDuRKf4ZOaM4TBw=="],
+
+    "typescript": ["typescript@4.9.5", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g=="],
+  }
+}

@@ -1,6 +1,6 @@
-import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins.js";
-import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommand } from "../arduino.js";
+import { DeviceInstance, HMApi, SettingsFieldDef } from "../../../src/plugins";
+import ArduinoSerialController from "../room-controllers/arduino_serial";
+import { ArduinoCommand } from "../arduino";
 
 export class ThermometerDHTDevice extends DeviceInstance {
     static id: `${string}:${string}` = "thermometer:dht";

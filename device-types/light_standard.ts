@@ -1,7 +1,7 @@
-import { DeviceInstance, HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins.js";
-import ArduinoSerialController from "../room-controllers/arduino_serial.js";
-import { ArduinoCommand, PinMode, PinState } from "../arduino.js";
-import { SimplePhysicalSwitch, simplePhysicalSwitchSettingsFields, SwitchSettings } from "../physical-switch.js";
+import { DeviceInstance, HMApi, Log, RoomControllerInstance, SettingsFieldDef } from "../../../src/plugins";
+import ArduinoSerialController from "../room-controllers/arduino_serial";
+import { ArduinoCommand, PinMode, PinState } from "../arduino";
+import { SimplePhysicalSwitch, simplePhysicalSwitchSettingsFields, SwitchSettings } from "../physical-switch";
 
 const log = new Log('light:standard');
 
